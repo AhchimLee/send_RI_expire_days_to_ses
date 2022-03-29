@@ -9,7 +9,6 @@ def main():
 
     session = boto3.session.Session(profile_name=p_n)
     ec2_cli = session.client('ec2', region_name=r_n)
-    ses_cli = session.client('ses', region_name=r_n)
     account_id = session.client('sts').get_caller_identity().get('Account')
 
     alert_to_expire_days = 7
@@ -27,18 +26,18 @@ def main():
     message = account_id + """ AWS Account: EC2 Reserved Instance Experation: <b>""" + str(alert_to_expire_days) + """</b> days <br/>
     """ + head + exp_list
 
-    if exp_list:
-        ses_verified_emails = get_verified_email_addresses(ses_cli)
+    ses_verified_emails = get_verified_email_addresses(ses_cli)
 
-        for email in alert_to_emails:
-            if ses_verified_emails:
-                if email not in ses_verified_emails:
-                    verify_email_identity(ses_cli, email)
-                    ses_not_verified_emails.append(email)
-            else:
+    for email in alert_to_emails:
+        if ses_verified_emails:
+            if email not in ses_verified_emails:
                 verify_email_identity(ses_cli, email)
                 ses_not_verified_emails.append(email)
+        else:
+            verify_email_identity(ses_cli, email)
+            ses_not_verified_emails.append(email)
 
+    if exp_list:
         alert_to_emails = list(set(alert_to_emails) - set(ses_not_verified_emails))
 
         for email in alert_to_emails:
