@@ -9,6 +9,7 @@ def main():
 
     session = boto3.session.Session(profile_name=p_n)
     ec2_cli = session.client('ec2', region_name=r_n)
+    ses_cli = session.client('ses', region_name=r_n)
     account_id = session.client('sts').get_caller_identity().get('Account')
 
     alert_to_expire_days = 7
